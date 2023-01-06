@@ -19,6 +19,11 @@ from monai.losses import DiceLoss
 from monai.metrics import DiceMetric, MeanIoU
 from monai.networks.nets import FlexibleUNet
 
+from monai.utils import set_determinism
+from monai.visualize.utils import blend_images
+
+
+set_determinism(seed=0)
 ###########################
 #### Data Loading #########
 ###########################
@@ -82,12 +87,19 @@ model = FlexibleUNet(
     is_pad=False,
 ).to(device)
 
+
 loss_function = DiceLoss(sigmoid=True)
 
 model_weight = model.state_dict()
 weights_no_head = {k: v for k, v in pretrained_weights.items() if not "segmentation_head" in k}
 model_weight.update(weights_no_head)
 model.load_state_dict(model_weight)
+
+for l in model.parameters():
+    l.requires_grad = False
+
+for l in model.segmentation_head.parameters():
+    l.requires_grad = True
 
 print("model loading successful")
 

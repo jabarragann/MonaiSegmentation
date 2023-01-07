@@ -47,6 +47,8 @@ if __name__ == "__main__":
             right = frame[:, 1280:, :]
             left_out.write(left)
             right_out.write(right)
+        else:
+            break
 
         # print(left.shape)
         # print(right.shape)

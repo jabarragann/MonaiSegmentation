@@ -1,3 +1,4 @@
+from Datasets.VidDataset import CombinedVidDataset, VidDataset
 import os
 from pathlib import Path
 from torch.utils.data import Dataset
@@ -31,29 +32,7 @@ vid_filepath = os.path.join(endo_dir, "endo.mp4")
 seg_filepath = os.path.join(endo_dir, "endo_seg.mp4")
 
 # Dataset
-vid_transforms = mt.Compose(
-    [
-        mt.DivisiblePad(32),
-        mt.ScaleIntensity(),
-        mt.CastToType(torch.float32),
-    ]
-)
-seg_transforms = mt.Compose([vid_transforms, mt.Lambda(lambda x: x[:1])])  # rgb -> 1 chan
-
-
-class CombinedVidDataset(Dataset):
-    def __init__(self, img_file, seg_file, vid_transforms, seg_transforms):
-        self.ds_img = VideoFileDataset(vid_filepath, vid_transforms)
-        self.ds_lbl = VideoFileDataset(seg_filepath, seg_transforms)
-
-    def __len__(self):
-        return len(self.ds_img)
-
-    def __getitem__(self, idx):
-        return {"image": self.ds_img[idx], "label": self.ds_lbl[idx]}
-
-
-ds = CombinedVidDataset(vid_filepath, seg_filepath, vid_transforms, seg_transforms)
+ds = CombinedVidDataset(vid_filepath, seg_filepath)
 dl = ThreadDataLoader(ds, batch_size=4, num_workers=0, shuffle=True)
 
 print(f"Number of frames in vid: {len(ds)}")
@@ -66,7 +45,7 @@ frames = sorted(np.random.choice(len(ds), size=nexamples, replace=False))
 for frame, ax in zip(frames, axes.flatten()):
     _ds = ds[frame]
     img, lbl = _ds["image"], _ds["label"]
-    blended = blend_images(img, lbl, cmap="viridis", alpha=0.2)
+    blended = blend_images(img, lbl, cmap="viridis", alpha=0.5)
     blended = np.moveaxis(blended, 0, -1)  # RGB to end
     ax.imshow(blended)
     ax.set_title(f"Frame: {frame}")

@@ -131,7 +131,7 @@ with torch.no_grad():
         inferred = np.expand_dims(inferred[1], 0)
 
         for col, (_lbl, title) in enumerate(zip((inferred, inferred), ("GT", "inferred"))):
-            blended = blend_images(img, _lbl, cmap="viridis", alpha=0.8)
+            blended = blend_images(img, _lbl, cmap="viridis", alpha=0.6)
             blended = np.moveaxis(blended, 0, -1)  # RGB to end
             axes[row, col].imshow(blended)
             axes[row, col].set_title(f"Frame: {frame} ({title})")
